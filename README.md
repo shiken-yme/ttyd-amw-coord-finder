@@ -1,5 +1,5 @@
 # PM:TTYD AMW Coordinate Finder
-Finds valid positions that write zeroes to an inputted address when setting up Arbitrary Memory Write in Chapter 2.
+Finds valid positions that write zeroes to an inputted address when setting up Arbitrary Memory Write.
 
 This tool is built to get results from `SoundEfxStop` AMW; there are other functions that can theoretically provide different AMW results, but practical uses for them have yet to be found.
 ## Building
