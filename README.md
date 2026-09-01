@@ -14,7 +14,7 @@ Writing to an address in uncached memory (0xC0000000 - 0xC17FFFFF) will write 8 
 
 The program automatically excludes position results that are too close to 0; appending `NO_EPSILON` to the input will include these results in the output.
 
-Results lower than -1000 or higher than 1000 are excluded unconditionally.
+Results lower than -2000 or higher than 2000 are excluded unconditionally.
 ## G*nerative AI Disclosure
 I did not use g*n AI in any way to create this C program.
 ## Credits
