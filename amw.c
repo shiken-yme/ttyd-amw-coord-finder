@@ -10,14 +10,14 @@
     Input an address in the 0x80000000 range and it will check for writes to both cached and uncached memory
 */
 
+#define ZPOS_MIN -2000.0f
+#define ZPOS_MAX 2000.0f
+#define EPSILON 0.00001f
+
 typedef union {
     u32 u;
     f32 f;
 } Coord;
-
-s32 bytesWritten[3] = {2, 8, 8};
-
-const char * versionNames[4] = {"JP", "US", "EU1", "EU2"};
 
 typedef enum : s32 {
     JP,
@@ -26,27 +26,11 @@ typedef enum : s32 {
     EU2
 } Region;
 
-#define ZPOS_MIN -2000.0f
-#define ZPOS_MAX 2000.0f
-#define EPSILON 0.00001f
+const char * versionNames[4] = {"JP", "US", "EU1", "EU2"};
 
-// based on math from Zephiles
-u32 get_addr_from_coord(Region region, u32 coord) {
-    switch (region) {
-    case JP:
-        return (0x806E0640 + ((coord * 0x88) & 0xFFFFFFFF)) & 0xFFFFFFFF;
-        break;
-    case US:
-        return (0x806EED40 + ((coord * 0x88) & 0xFFFFFFFF)) & 0xFFFFFFFF;
-        break;
-    case EU1:
-        return (0x8072FC60 + ((coord * 0x88) & 0xFFFFFFFF)) & 0xFFFFFFFF;
-        break;
-    case EU2:
-        return (0x806FB860 + ((coord * 0x88) & 0xFFFFFFFF)) & 0xFFFFFFFF;
-        break;
-    }
-}
+s32 bytesWritten[3] = {2, 8, 8};
+
+u32 base[4] = {0x806E0640, 0x806EED40, 0x8072FC60, 0x806FB860};
 
 Region get_region(const char * name) {
     for (s32 i = 0; i < 4; i += 1) {
@@ -72,6 +56,7 @@ s32 main(s32 argc, char * argv[]) {
     if (argc >= 4)
         chkEpsilon = strcmp(argv[3], "NO_EPSILON");
     u32 addr[3] = {baseAddr, baseAddr + 0x40000000, baseAddr + 0x3FFFFFFC};
+    u32 baseCoord = base[(s32)region];
     Coord curCoord;
     curCoord.u = 0;
     s32 matches = 0;
@@ -79,7 +64,7 @@ s32 main(s32 argc, char * argv[]) {
         for (s32 i = 0; i < 3; i += 1) {
             if (curCoord.f >= ZPOS_MIN && curCoord.f <= ZPOS_MAX) {
                 if (!chkEpsilon || (curCoord.f >= EPSILON || curCoord.f <= -EPSILON)) {
-                    if (addr[i] == get_addr_from_coord(region, curCoord.u)) {
+                    if (addr[i] == ((baseCoord + ((curCoord.u * 0x88) & 0xFFFFFFFF)) & 0xFFFFFFFF)) {
                         printf("Coord 0x%X (%.8f) writes %d bytes to addr 0x%X\n", curCoord.u, curCoord.f, bytesWritten[i], addr[i]);
                         matches += 1;
                     }

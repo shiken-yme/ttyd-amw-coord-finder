@@ -15,9 +15,11 @@ Writing to an address in uncached memory (0xC0000000 - 0xC17FFFFF) will write 8 
 The program automatically excludes position results that are too close to 0; appending `NO_EPSILON` to the input will include these results in the output.
 
 Results lower than -2000 or higher than 2000 are excluded unconditionally.
+
+The PAL version has two separate cases: the EU1 case is true upon resetting the game on 50Hz & upon booting the game on either 50/60Hz; EU2 is true exclusively upon resetting the game on 60Hz.
 ## G*nerative AI Disclosure
 I did not use g*n AI in any way to create this C program.
 ## Credits
 * [SeekyCt/spm-headers](https://github.com/SeekyCt/spm-headers) for the included common.h, used for typedef mnemonics
-* [Zephiles](https://github.com/Zephiles/) for the math used in get_addr_from_coord() & for guidance on how AMW works
+* [Zephiles](https://github.com/Zephiles/) for math used to derive an address from a coordinate & for guidance on how AMW works
 * Various Paper Mario: The Thousand-Year Door reverse engineers for discovering AMW and finding uses of it in speedruns
