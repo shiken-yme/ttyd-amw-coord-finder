@@ -5,7 +5,7 @@
 
 /*
     Program to find working floats that write to a desired address in AMW
-    Usage: amw [version] [address] (NO_EPSILON)
+    Usage: amw (NO_EPSILON) [version] [address]
     Valid version inputs are JP, US, EU1, EU2 (see readme for explanation of EU1 and EU2)
     Input an address in the 0x80000000 range and it will check for writes to both cached and uncached memory
 */
@@ -42,19 +42,41 @@ Region get_region(const char * name) {
 }
 
 s32 main(s32 argc, char * argv[]) {
+    // There must be a minimum of three args
     if (argc < 3) {
         printf("Please input a region and an address\n");
         return 0;
     }
-    Region region = get_region(argv[1]);
+
+    // The arg for the epsilon is expected to be first but may also not be passed at all, so use
+    // an arbitrary variable to keep track of the current index
+    s32 argIndex = 1;
+
+    // Check if the epsilon should be used
+    bool chkEpsilon = true;
+
+    if (strcmp(argv[argIndex], "NO_EPSILON") == 0) {
+        // Not using the epsilon, so increment argIndex
+        chkEpsilon = false;
+        argIndex++;
+    } else {
+        // Assume that the epsilon is being used, so use the current argIndex for the next arg
+    }
+
+    // Get the region
+    Region region = get_region(argv[argIndex++]);
+
+    // Get the base address
     u32 baseAddr;
-    if (sscanf(argv[2], "%x", &baseAddr) != 1) {
+
+    if (sscanf(argv[argIndex++], "%x", &baseAddr) != 1) {
         printf("Error parsing address input\n");
         return 0;
     }
-    bool chkEpsilon = true;
-    if (argc >= 4)
-        chkEpsilon = strcmp(argv[3], "NO_EPSILON");
+
+    // Make sure the base address is a multiple of 0x4, as lower multiples are not possible
+    baseAddr &= ~3;
+
     u32 addr[3] = {baseAddr, baseAddr + 0x40000000, baseAddr + 0x3FFFFFFC};
     u32 baseCoord = base[(s32)region];
     Coord curCoord;
