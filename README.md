@@ -16,10 +16,18 @@ The program automatically excludes position results that are too close to 0; app
 
 Results lower than -2000 or higher than 2000 are excluded unconditionally.
 
-The PAL version has two separate cases: the EU1 case is true upon resetting the game on 50Hz & upon booting the game on either 50/60Hz; EU2 is true exclusively upon resetting the game on 60Hz.
+### PAL Version
+
+The PAL version has two separate cases that change the results of AMW. Use **EU1** for:
+* After booting the game, regardless of 50/60Hz selection
+* After resetting the game while on 50Hz
+
+Use **EU2** for:
+* After resetting the game while on 60Hz
+
 ## G*nerative AI Disclosure
 I did not use g*n AI in any way to create this C program.
 ## Credits
+* [Zephiles](https://github.com/Zephiles/) for various code/documentation contributions
 * [SeekyCt/spm-headers](https://github.com/SeekyCt/spm-headers) for the included common.h, used for typedef mnemonics
-* [Zephiles](https://github.com/Zephiles/) for math used to derive an address from a coordinate & for guidance on how AMW works
 * Various Paper Mario: The Thousand-Year Door reverse engineers for discovering AMW and finding uses of it in speedruns
