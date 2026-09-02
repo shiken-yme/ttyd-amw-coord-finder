@@ -5,14 +5,14 @@ This tool is built to get results from `SoundEfxStop` AMW; there are other funct
 ## Building
 `gcc -Ofast -o amw -I ./include amw.c`
 ## Usage
-`amw [region] [addr] (NO_EPSILON)`
-examples: `amw JP 0x80305BE8` `amw EU1 8042CB10 NO_EPSILON`
+`amw (NO_EPSILON) [region] [addr]`
+examples: `amw JP 0x80305BE8` `amw NO_EPSILON EU1 8042CB10`
 
 The program will automatically check for addresses in both cached and uncached memory when provided an address in the 0x8XXXXXXX range.
 
 Writing to an address in uncached memory (0xC0000000 - 0xC17FFFFF) will write 8 bytes of 00; otherwise it will write 2 bytes of 00.
 
-The program automatically excludes position results that are too close to 0; appending `NO_EPSILON` to the input will include these results in the output.
+The program automatically excludes position results that are too close to 0; passing `NO_EPSILON` as the first parameter will include these results in the output.
 
 Results lower than -2000 or higher than 2000 are excluded unconditionally.
 
