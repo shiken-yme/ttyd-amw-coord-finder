@@ -1,5 +1,5 @@
 # PM:TTYD AMW Coordinate Finder
-Finds valid positions that write zeroes to an inputted address when setting up **Arbitrary Memory Write**, a speedrun technique in Paper Mario: The Thousand-Year Door that can allow for unintended, esoteric behavior. The most notable result of AMW that has been found is being able to set Mario's hitbox size to 0 upon exiting Paper Mode after entering any room.
+Finds valid Z positions that write arbitrary bytes to an inputted address when setting up **Arbitrary Memory Write**, a speedrun technique in Paper Mario: The Thousand-Year Door that can allow for unintended, esoteric behavior. The most notable result of AMW that has been found is being able to set Mario's hitbox size to 0 upon exiting Paper Mode after entering any room.
 
 For an explanation of how AMW works in the scope of TTYD, please refer to [this Google Doc by SolidifiedGaming](https://docs.google.com/document/d/1-YE5YzRGwCECkK8GBotE-4sqT-ODZ-3nHBHJbACtVW0) and [this definition by the Common Weakness Enumeration](https://cwe.mitre.org/data/definitions/123.html) for technical details on the nature of AMW.
 
