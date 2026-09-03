@@ -54,7 +54,7 @@ const FunctionData functions[3] = {"SoundEfxStop",
 
                                    "SoundSongStopCh",
                                    0x806E05E0, 0x80679260, 0x806BA180, 0x80685D80,
-                                   4, 8, 8,
+                                   4, 4, 4,
                                    0x10};
 
 Function get_function(const char * name) {
