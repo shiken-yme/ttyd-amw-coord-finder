@@ -33,8 +33,7 @@ typedef enum : s32 {
     SOUND_SONG_STOP_CH, // SoundSongStopCh
 } Function;
 
-typedef struct
-{
+typedef struct {
     const char * name;
     u32 base[4];         // One for each region
     s32 bytesWritten[3]; // SoundSongStopCh writes 4 bytes to cached memory while the others write 2
@@ -76,18 +75,31 @@ Region get_region(const char * name) {
     abort();
 }
 
+bool get_no_epsilon(const char * arg, s32 * argIndex) {
+    if (strcmp(arg, "NO_EPSILON") == 0) {
+        // Not using the epsilon, so increment argIndex
+        *argIndex += 1;
+        return false;
+    } else {
+        // Assume that the epsilon is being used, so use the current argIndex for the next arg
+        return true;
+    }
+}
+
 s32 main(s32 argc, char * argv[]) {
-    // There must be a minimum of three args
+    // There must be a minimum of three args, including the executable name
     if (argc < 3) {
         printf("Please input a region and an address\n");
         return 0;
     }
 
-    // The arg for the epsilon is expected to be first but may also not be passed at all, so use
-    // an arbitrary variable to keep track of the current index
+    // Args for epsilon and function name may not be passed, so use an arbitrary variable to keep track of the current index
     s32 argIndex = 1;
 
-    // Check if specifying a functon to use
+    // Check if the epsilon should be used
+    bool chkEpsilon = get_no_epsilon(argv[argIndex], &argIndex);
+
+    // Check if specifying a function to use
     Function func = get_function(argv[argIndex]);
 
     if (func == INVALID_FUNCTION) {
@@ -98,16 +110,9 @@ s32 main(s32 argc, char * argv[]) {
         argIndex++;
     }
 
-    // Check if the epsilon should be used
-    bool chkEpsilon = true;
-
-    if (strcmp(argv[argIndex], "NO_EPSILON") == 0) {
-        // Not using the epsilon, so increment argIndex
-        chkEpsilon = false;
-        argIndex++;
-    } else {
-        // Assume that the epsilon is being used, so use the current argIndex for the next arg
-    }
+    // Check again for no epsilon after function input if it hasn't already been set
+    if (chkEpsilon)
+        chkEpsilon = get_no_epsilon(argv[argIndex], &argIndex);
 
     // Get the region
     const Region region = get_region(argv[argIndex++]);
@@ -138,7 +143,7 @@ s32 main(s32 argc, char * argv[]) {
                 if (!chkEpsilon || (curCoord.f >= EPSILON || curCoord.f <= -EPSILON)) {
                     if (addr[i] == ((startAddr + ((curCoord.u * multiplier) & 0xFFFFFFFF)) & 0xFFFFFFFF)) {
                         printf("Coord 0x%08X (%.8f) writes %d bytes to addr 0x%08X\n", curCoord.u, curCoord.f, bytesWrittenPtr[i], addr[i]);
-                        matches += 1; 
+                        matches += 1;
                     }
                 }
             }
