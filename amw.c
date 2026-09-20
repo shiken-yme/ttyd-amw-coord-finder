@@ -87,7 +87,8 @@ s32 main(s32 argc, char * argv[]) {
     Region region = INVALID_REGION;
     u32 baseAddr = 0;
 
-    for (s32 i = 0; i < argc; i++) {
+    // Start at one to skip the executable name
+    for (s32 i = 1; i < argc; i++) {
         // Check if the epsilon should be used
         if (!ignoreEpsilon) {
             if (strcmp(argv[i], "NO_EPSILON") == 0) {
