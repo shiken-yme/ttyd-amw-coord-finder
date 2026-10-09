@@ -20,6 +20,7 @@ typedef union {
 } Coord;
 
 typedef enum : s32 {
+    INVALID_REGION = -1,
     JP,
     US,
     EU1,
@@ -59,9 +60,8 @@ const FunctionData functions[3] = {"SoundEfxStop",
 
 Function get_function(const char * name) {
     for (s32 i = 0; i < 3; i += 1) {
-        if (strcmp(name, functions[i].name) == 0) {
+        if (strcmp(name, functions[i].name) == 0)
             return (Function)i;
-        }
     }
     return INVALID_FUNCTION;
 }
@@ -71,19 +71,7 @@ Region get_region(const char * name) {
         if (strcmp(name, versionNames[i]) == 0)
             return (Region)i;
     }
-    printf("Error parsing region input\n");
-    abort();
-}
-
-bool get_no_epsilon(const char * arg, s32 * argIndex) {
-    if (strcmp(arg, "NO_EPSILON") == 0) {
-        // Not using the epsilon, so increment argIndex
-        *argIndex += 1;
-        return false;
-    } else {
-        // Assume that the epsilon is being used, so use the current argIndex for the next arg
-        return true;
-    }
+    return INVALID_REGION;
 }
 
 s32 main(s32 argc, char * argv[]) {
@@ -93,34 +81,77 @@ s32 main(s32 argc, char * argv[]) {
         return 0;
     }
 
-    // Args for epsilon and function name may not be passed, so use an arbitrary variable to keep track of the current index
-    s32 argIndex = 1;
+    // Loop through all of the args to find the used ones
+    bool ignoreEpsilon = false;
+    Function func = INVALID_FUNCTION;
+    Region region = INVALID_REGION;
+    u32 baseAddr = 0;
 
-    // Check if the epsilon should be used
-    bool chkEpsilon = get_no_epsilon(argv[argIndex], &argIndex);
+    // Start at one to skip the executable name
+    for (s32 i = 1; i < argc; i++) {
+        // Check if the epsilon should be used
+        if (!ignoreEpsilon) {
+            if (strcmp(argv[i], "NO_EPSILON") == 0) {
+                // Found the arg, so continue to the next one
+                ignoreEpsilon = true;
+                continue;
+            } else {
+                // Assume the arg is not for specifying if the epsilon should be used, so continue to the next check
+            }
+        }
 
-    // Check if specifying a function to use
-    Function func = get_function(argv[argIndex]);
+        // Check if specifying the function to use
+        if (func == INVALID_FUNCTION) {
+            Function tempFunc = get_function(argv[i]);
 
-    if (func == INVALID_FUNCTION) {
-        // Assume that a function was not specified, so default to SoundEfxStop and use the current argIndex for the next arg
-        func = SOUND_EFX_STOP;
-    } else {
-        // Specified a function, so increment argIndex
-        argIndex++;
+            if (tempFunc != INVALID_FUNCTION) {
+                // Found the arg, so continue to the next one
+                func = tempFunc;
+                continue;
+            } else {
+                // Assume the arg is not for specifying the function to use, so continue to the next check
+            }
+        }
+
+        // Get the region
+        if (region == INVALID_REGION) {
+            Region tempRegion = get_region(argv[i]);
+
+            if (tempRegion != INVALID_REGION) {
+                // Found the arg, so continue to the next one
+                region = tempRegion;
+                continue;
+            } else {
+                // Assume the arg is not for specifying the region, so continue to the next check
+            }
+        }
+
+        // Get the base address
+        if (baseAddr == 0) {
+            u32 tempBaseAddr;
+
+            if (sscanf(argv[i], "%x", &tempBaseAddr) == 1) {
+                // Found the arg, so continue to the next one
+                baseAddr = tempBaseAddr;
+                continue;
+            } else {
+                // Assume the arg is not for specifying the base address, so continue to the next check
+            }
+        }
     }
 
-    // Check again for no epsilon after function input if it hasn't already been set
-    if (chkEpsilon)
-        chkEpsilon = get_no_epsilon(argv[argIndex], &argIndex);
+    // Make sure all of the required args are present
+    if (func == INVALID_FUNCTION) {
+        // Assume that a function was not specified, so default to SoundEfxStop
+        func = SOUND_EFX_STOP;
+    }
 
-    // Get the region
-    const Region region = get_region(argv[argIndex++]);
+    if (region == INVALID_REGION) {
+        printf("Error parsing region input\n");
+        return 0;
+    }
 
-    // Get the base address
-    u32 baseAddr;
-
-    if (sscanf(argv[argIndex++], "%x", &baseAddr) != 1) {
+    if (baseAddr == 0) {
         printf("Error parsing address input\n");
         return 0;
     }
@@ -134,15 +165,22 @@ s32 main(s32 argc, char * argv[]) {
     const u32 multiplier = funcDataPtr->multiplier;
 
     const u32 addr[3] = {baseAddr, baseAddr + 0x40000000, baseAddr + 0x3FFFFFFC};
+    s32 matches = 0;
+
     Coord curCoord;
     curCoord.u = 0;
-    s32 matches = 0;
+
     do {
         for (s32 i = 0; i < 3; i += 1) {
             if (curCoord.f >= ZPOS_MIN && curCoord.f <= ZPOS_MAX) {
-                if (!chkEpsilon || (curCoord.f >= EPSILON || curCoord.f <= -EPSILON)) {
+                if (ignoreEpsilon || (curCoord.f >= EPSILON || curCoord.f <= -EPSILON)) {
                     if (addr[i] == ((startAddr + ((curCoord.u * multiplier) & 0xFFFFFFFF)) & 0xFFFFFFFF)) {
-                        printf("Coord 0x%08X (%.8f) writes %d bytes to addr 0x%08X\n", curCoord.u, curCoord.f, bytesWrittenPtr[i], addr[i]);
+                        printf("Coord 0x%08X (%.8f) writes %d bytes to addr 0x%08X\n",
+                               curCoord.u,
+                               curCoord.f,
+                               bytesWrittenPtr[i],
+                               addr[i]);
+
                         matches += 1;
                     }
                 }
@@ -150,6 +188,7 @@ s32 main(s32 argc, char * argv[]) {
         }
         curCoord.u += 1;
     } while (curCoord.u != 0xFFFFFFFF);
+
     printf("Found %d matches for base address 0x%08X\n", matches, baseAddr);
     return 0;
 }
